@@ -16,7 +16,7 @@
   vars:
     key_name: justin-jul-9-2015
     instance_type: t2.small
-    security_group: default
+    security_group: blog
     image: ami-d05e75b8
     region: us-east-1
   tasks:
