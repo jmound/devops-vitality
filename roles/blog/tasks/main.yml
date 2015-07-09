@@ -1,5 +1,5 @@
-- apt: update_cache=yes
-  sudo: true
+# - apt: update_cache=yes
+#   sudo: true
 
 - name: install packages
   apt: name={{ item }} state=present
@@ -15,11 +15,23 @@
   tags:
     - framework
 
-- name: Create the base directory.
+- name: Create the base directory
   file: state=directory path=/opt/blog
   sudo: yes
   tags:
     - framework
 
-- name: Pull sources from the repository.
+- name: Pull sources from the repository
   git: repo=https://github.com/vitalco/devops_blog.git dest=/opt/blog version=master accept_hostkey=yes
+
+
+- name: pip install requirements
+  pip: requirements=/opt/blog/requirements.txt
+
+- name: pip install gunicorn
+  pip: name=gunicorn
+
+- name: run gunicorn
+  command: gunicorn -D application:app
+  args:
+    chdir: /opt/blog
