@@ -1,0 +1,50 @@
+- apt: update_cache=yes
+  sudo: true
+
+- name: install packages
+  apt: name={{ item }} state=present
+  sudo: true
+  with_items:
+       - python-pip
+       - git
+       - nginx
+
+- name: Get release timestamp
+  command: date +%Y%m%d%H%M%S
+  register: release
+  sudo: true
+  tags:
+    - framework
+
+- name: Create the base directory
+  file: state=directory path=/opt/blog
+  sudo: yes
+  tags:
+    - framework
+
+- name: Pull sources from the repository
+  git: repo=https://github.com/vitalco/devops_blog.git dest=/opt/blog version=master accept_hostkey=yes
+
+
+- name: pip install requirements
+  pip: requirements=/opt/blog/requirements.txt
+
+- name: pip install gunicorn
+  pip: name=gunicorn
+
+- name: run gunicorn
+  command: gunicorn -D application:app
+  args:
+    chdir: /opt/blog
+
+- name: install nginx config file
+  sudo: true
+  copy:
+    src: web.conf
+    dest: /etc/nginx/sites-enabled/default
+    owner: root
+    group: root
+    mode: 0644
+
+- name: restart nginx
+  service: name=nginx state=restarted
