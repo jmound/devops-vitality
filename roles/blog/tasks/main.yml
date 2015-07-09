@@ -1,2 +1,25 @@
-- apt: name=python update_cache=yes
+- apt: update_cache=yes
+  sudo: true
 
+- name: install packages
+  apt: name={{ item }} state=present
+  sudo: true
+  with_items:
+       - python-pip
+       - git
+
+- name: Get release timestamp
+  command: date +%Y%m%d%H%M%S
+  register: release
+  sudo: true
+  tags:
+    - framework
+
+- name: Create the base directory.
+  file: state=directory path=/opt/blog
+  sudo: yes
+  tags:
+    - framework
+
+- name: Pull sources from the repository.
+  git: repo=https://github.com/vitalco/devops_blog.git dest=/opt/blog version=master accept_hostkey=yes
